@@ -1,22 +1,26 @@
 # load packages
 library(tidyverse)
+library(magrittr)
 library(ggplot2)
 library(humanleague)
 
 # specify number of participants
-n <- 2e3
+n      <- 2e3
+trials <- 12
 
 # create data
-data_r <- data.frame(x = round(runif(n * 10, -0.49, 100.49)),
-                     y = round(runif(n * 10, -0.49, 100.49))) %>%
-  mutate(id = rep(seq_len(nrow(.) / 10), each = 10), .before = 1)
+data_r <- data.frame(x = round(runif(n * trials, -0.49, 100.49)),
+                     y = round(runif(n * trials, -0.49, 100.49))) %>%
+  mutate(id    = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
+  mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
 
-data_s <- sobolSequence(dim = 2, n   = n * 10) %>%
+data_s <- sobolSequence(dim = 2, n   = n * trials) %>%
   data.frame() %>%
   select(x = X1,
          y = X2) %>%
   mutate_all(~round((.x * 100.98) - 0.49)) %>%
-  mutate(id = rep(seq_len(nrow(.) / 10), each = 10), .before = 1)
+  mutate(id = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
+  mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
   
 
 # visualize
@@ -59,8 +63,15 @@ tail(panoply::perble(data_s$x))
 head(panoply::perble(data_s$y))
 tail(panoply::perble(data_s$y))
 
+# convert to wide format
+data_s_wide <- data_s %>%
+  # mutate(trial = paste0("trial_", trial)) %>%
+  pivot_wider(names_from = trial,
+              values_from = c(x, y))
+
 # export data
-rio::export(data_s, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobel_values.csv")
+rio::export(data_s_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobel_values.csv")
+
 
 
 
