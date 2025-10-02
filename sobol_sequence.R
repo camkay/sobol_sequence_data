@@ -46,6 +46,22 @@ data_s %>%
     theme_bw() +
     theme(strip.background = element_blank())
 
+data_r %>%
+  mutate(id = factor(id)) %>%
+  ggplot() +
+    geom_point(aes(x     = x, 
+                   y     = y)) +
+    theme_bw() +
+    theme(strip.background = element_blank())
+
+data_s %>%
+  mutate(id = factor(id)) %>%
+  ggplot() +
+    geom_point(aes(x     = x, 
+                   y     = y)) +
+    theme_bw() +
+    theme(strip.background = element_blank())
+
 # check coverage
 barplot(table(data_r$x))
 barplot(table(data_r$y))
@@ -65,16 +81,8 @@ tail(panoply::perble(data_s$y))
 
 # convert to wide format
 data_s_wide <- data_s %>%
-  # mutate(trial = paste0("trial_", trial)) %>%
   pivot_wider(names_from = trial,
               values_from = c(x, y))
 
 # export data
-rio::export(data_s_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobel_values.csv")
-
-
-
-
-  
-
-
+rio::export(data_s_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values.csv")
