@@ -6,7 +6,7 @@ library(humanleague)
 
 # specify number of participants
 n      <- 2e3
-trials <- 12
+trials <- 10
 
 # create data
 data_r <- data.frame(x = round(runif(n * trials, -0.49, 100.49)),
