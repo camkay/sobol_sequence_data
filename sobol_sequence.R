@@ -9,22 +9,56 @@ n      <- 2e3
 trials <- 10
 
 # create data
-data_r <- data.frame(x = round(runif(n * trials, -0.49, 100.49)),
-                     y = round(runif(n * trials, -0.49, 100.49))) %>%
+data_r_1d <- data.frame(x = round(runif(n * trials, -0.49, 100.49))) %>%
   mutate(id    = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
   mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
 
-data_s <- sobolSequence(dim = 2, n   = n * trials) %>%
+data_s_1d <- sobolSequence(dim = 1, 
+                           n   = n * trials) %>%
+  data.frame() %>%
+  rename(x = 1) %>%
+  mutate_all(~round((.x * 100.98) - 0.49)) %>%
+  mutate(id = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
+  mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
+
+data_r_2d <- data.frame(x = round(runif(n * trials, -0.49, 100.49)),
+                      y = round(runif(n * trials, -0.49, 100.49))) %>%
+  mutate(id    = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
+  mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
+
+data_s_2d <- sobolSequence(dim = 2, 
+                         n   = n * trials) %>%
   data.frame() %>%
   select(x = X1,
          y = X2) %>%
   mutate_all(~round((.x * 100.98) - 0.49)) %>%
   mutate(id = rep(seq_len(nrow(.) / trials), each = trials), .before = 1) %>%
   mutate(trial = rep(1:trials, nrow(.) / trials), .after = id)
-  
 
 # visualize
-data_r %>%
+data_r_1d %>%
+  filter(between(id, 1, 4)) %>%
+  mutate(id = factor(id)) %>%
+  ggplot() +
+    geom_point(aes(x     = x, 
+                   y     = 1, 
+                   color = id)) +
+    facet_wrap(~id, nrow = 4, ncol = 1) +
+    theme_bw() +
+    theme(strip.background = element_blank())
+
+data_s_1d %>%
+  filter(between(id, 1, 4)) %>%
+  mutate(id = factor(id)) %>%
+  ggplot() +
+    geom_point(aes(x     = x, 
+                   y     = 1, 
+                   color = id)) +
+    facet_wrap(~id, nrow = 4, ncol = 1) +
+    theme_bw() +
+    theme(strip.background = element_blank())
+
+data_r_2d %>%
   filter(between(id, 1, 16)) %>%
   mutate(id = factor(id)) %>%
   ggplot() +
@@ -35,7 +69,7 @@ data_r %>%
     theme_bw() +
     theme(strip.background = element_blank())
   
-data_s %>%
+data_s_2d %>%
   filter(between(id, 1, 16)) %>%
   mutate(id = factor(id)) %>%
   ggplot() +
@@ -46,7 +80,7 @@ data_s %>%
     theme_bw() +
     theme(strip.background = element_blank())
 
-data_r %>%
+data_r_2d %>%
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -54,7 +88,7 @@ data_r %>%
     theme_bw() +
     theme(strip.background = element_blank())
 
-data_s %>%
+data_s_2d %>%
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -63,26 +97,42 @@ data_s %>%
     theme(strip.background = element_blank())
 
 # check coverage
-barplot(table(data_r$x))
-barplot(table(data_r$y))
+barplot(table(data_r_1d$x))
 
-barplot(table(data_s$x))
-barplot(table(data_s$y))
+barplot(table(data_s_1d$x))
 
-head(panoply::perble(data_r$x))
-tail(panoply::perble(data_r$x))
-head(panoply::perble(data_r$y))
-tail(panoply::perble(data_r$y))
+barplot(table(data_r_2d$x))
+barplot(table(data_r_2d$y))
 
-head(panoply::perble(data_s$x))
-tail(panoply::perble(data_s$x))
-head(panoply::perble(data_s$y))
-tail(panoply::perble(data_s$y))
+barplot(table(data_s_2d$x))
+barplot(table(data_s_2d$y))
+
+head(panoply::perble(data_r_1d$x))
+tail(panoply::perble(data_r_1d$x))
+
+head(panoply::perble(data_s_1d$x))
+tail(panoply::perble(data_s_1d$x))
+
+head(panoply::perble(data_r_2d$x))
+tail(panoply::perble(data_r_2d$x))
+head(panoply::perble(data_r_2d$y))
+tail(panoply::perble(data_r_2d$y))
+
+head(panoply::perble(data_s_2d$x))
+tail(panoply::perble(data_s_2d$x))
+head(panoply::perble(data_s_2d$y))
+tail(panoply::perble(data_s_2d$y))
 
 # convert to wide format
-data_s_wide <- data_s %>%
+data_s_1d_wide <- data_s_1d %>%
+  mutate(trial = paste0("x_", trial)) %>%
+  pivot_wider(names_from = trial,
+              values_from = c(x))
+
+data_s_2d_wide <- data_s_2d %>%
   pivot_wider(names_from = trial,
               values_from = c(x, y))
 
 # export data
-rio::export(data_s_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values.csv")
+rio::export(data_s_1d_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values_1_dim.csv")
+rio::export(data_s_2d_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values_2_dim.csv")
