@@ -5,7 +5,7 @@ library(ggplot2)
 library(humanleague)
 
 # specify number of participants
-n      <- 2e3
+n      <- 25e3
 trials <- 10
 
 # create data
@@ -81,6 +81,7 @@ data_s_2d %>%
     theme(strip.background = element_blank())
 
 data_r_2d %>%
+  slice_head(n = 5000) %>%
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -89,6 +90,7 @@ data_r_2d %>%
     theme(strip.background = element_blank())
 
 data_s_2d %>%
+  slice_head(n = 5000) %>%
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -133,6 +135,34 @@ data_s_2d_wide <- data_s_2d %>%
   pivot_wider(names_from = trial,
               values_from = c(x, y))
 
+# chop into different data frames
+blocks <- 5
+
+data_s_1d_wide %<>%
+  mutate(block = rep(letters[seq_len(blocks)], 
+                     each = nrow(.) / blocks),
+         .after = id) %>%
+  mutate(sobol_block = block, .after = block) %>%
+  nest(.by = block)
+
+data_s_2d_wide %<>%
+  mutate(block = rep(letters[seq_len(blocks)], 
+                     each = nrow(.) / blocks),
+         .after = id) %>%
+  mutate(sobol_block = block, .after = block) %>%
+  nest(.by = block)
+
 # export data
-rio::export(data_s_1d_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values_1_dim.csv")
-rio::export(data_s_2d_wide, "/Users/cameronkay/Documents/Projects/Research/1 Active/norms_and_evidence/sobol_sequence_data/sobol_values_2_dim.csv")
+walk2(.x = data_s_1d_wide$data,
+      .y = paste0(here::here(),
+                  "/sobol_values_1_dim_",
+                  data_s_1d_wide$block,
+                  ".csv"),
+      .f = ~rio::export(.x, .y))
+
+walk2(.x = data_s_2d_wide$data,
+      .y = paste0(here::here(),
+                  "/sobol_values_2_dim_",
+                  data_s_2d_wide$block,
+                  ".csv"),
+      .f = ~rio::export(.x, .y))
