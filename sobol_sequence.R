@@ -81,7 +81,11 @@ data_s_2d %>%
     theme(strip.background = element_blank())
 
 data_r_2d %>%
+<<<<<<< HEAD
   slice_head(n = 5000) %>%
+=======
+  slice_head(n = 4000) %>%
+>>>>>>> c17ccae19bac7e04f1445c43b08623554680fdf2
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -89,8 +93,13 @@ data_r_2d %>%
     theme_bw() +
     theme(strip.background = element_blank())
 
+
 data_s_2d %>%
+<<<<<<< HEAD
   slice_head(n = 5000) %>%
+=======
+  slice_head(n = 4000) %>%
+>>>>>>> c17ccae19bac7e04f1445c43b08623554680fdf2
   mutate(id = factor(id)) %>%
   ggplot() +
     geom_point(aes(x     = x, 
@@ -152,6 +161,12 @@ data_s_2d_wide %<>%
   mutate(sobol_block = block, .after = block) %>%
   nest(.by = block)
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> c17ccae19bac7e04f1445c43b08623554680fdf2
 # export data
 walk2(.x = data_s_1d_wide$data,
       .y = paste0(here::here(),
